@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d1530">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trener">
+<title>Trener matematike</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f2f4f9;
+  --card:#ffffff;
+  --ink:#101828;
+  --muted:#61708a;
+  --faint:#98a4ba;
+  --line:#e3e8f1;
+  --hero1:#0d1530; --hero2:#152550; --hero3:#1c2f66;
+  --accent:#4c5bf5; --accent-deep:#3341d6; --accent-soft:#edeffe;
+  --gold:#e2a437; --gold-soft:#fbf3e2;
+  --ok:#12a06e; --ok-soft:#e4f6ef;
+  --err:#dd4b4b; --err-soft:#fceaea;
+  --display:"Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --body:"Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --shadow-sm:0 1px 2px rgba(16,24,40,.05);
+  --shadow:0 1px 3px rgba(16,24,40,.07), 0 12px 34px rgba(16,24,40,.08);
+  --shadow-lg:0 24px 60px rgba(13,21,48,.22);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:var(--body); color:var(--ink); background:var(--bg);
+  min-height:100vh; -webkit-font-smoothing:antialiased; line-height:1.5;
+}
+
+/* ---------- HERO ---------- */
+.hero{
+  background:linear-gradient(135deg,var(--hero1),var(--hero2) 55%,var(--hero3));
+  color:#fff; padding:calc(18px + env(safe-area-inset-top)) 0 78px; position:relative; overflow:hidden;
+}
+.hero::before{
+  content:""; position:absolute; inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:30px 30px; mask-image:radial-gradient(ellipse at 30% 0%, #000 30%, transparent 75%);
+}
+.hero::after{
+  content:""; position:absolute; top:-140px; right:-100px; width:380px; height:380px; border-radius:50%;
+  background:radial-gradient(circle,rgba(76,91,245,.35),transparent 65%);
+}
+.hero-in{max-width:620px;margin:0 auto;padding:0 20px;position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.eyebrow{font-family:var(--display);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:#8ea0ff;font-weight:600;}
+.hero h1{font-family:var(--display);font-size:27px;font-weight:700;margin:3px 0 2px;letter-spacing:-.015em;}
+.hero .date{font-size:12.5px;color:#aab6d8;text-transform:capitalize;}
+
+/* goal ring */
+.ring-wrap{flex:none;text-align:center;cursor:pointer;background:none;border:none;color:#fff;font-family:var(--body);padding:0;}
+.ring{position:relative;width:76px;height:76px;}
+.ring svg{transform:rotate(-90deg);}
+.ring .track{stroke:rgba(255,255,255,.14);}
+.ring .fill{stroke:#8ea0ff;stroke-linecap:round;transition:stroke-dashoffset .5s ease;}
+.ring .fill.done{stroke:#59d9a4;}
+.ring-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ring-num b{font-family:var(--display);font-size:19px;font-weight:700;line-height:1;}
+.ring-num span{font-size:9px;color:#aab6d8;letter-spacing:.08em;text-transform:uppercase;margin-top:2px;}
+.ring-cap{font-size:10px;color:#8494bd;margin-top:5px;}
+
+/* ---------- LAYOUT ---------- */
+.wrap{max-width:620px;margin:-56px auto 0;padding:0 16px calc(44px + env(safe-area-inset-bottom));position:relative;z-index:2;}
+
+/* stat tiles */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.stat{
+  background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 10px 10px;
+  text-align:left;box-shadow:var(--shadow);cursor:pointer;position:relative;transition:transform .1s ease, box-shadow .15s ease;
+  font-family:var(--body);
+}
+.stat:hover{transform:translateY(-1px);box-shadow:0 4px 8px rgba(16,24,40,.08),0 16px 40px rgba(16,24,40,.1);}
+.stat .num{font-family:var(--display);font-size:21px;font-weight:700;line-height:1.05;color:var(--ink);}
+.stat .lbl{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px;font-weight:600;}
+.stat .sub{font-size:10px;color:var(--faint);margin-top:1px;}
+.stat .go{position:absolute;top:8px;right:8px;width:18px;height:18px;border-radius:6px;background:var(--accent-soft);color:var(--accent-deep);
+  display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+.stat.gold .num{color:var(--gold);}
+.stat.gold .go{background:var(--gold-soft);color:var(--gold);}
+
+/* controls */
+.panel-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:0 4px 7px;font-weight:700;}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+.chip{
+  border:1px solid var(--line);background:var(--card);color:#3b4658;
+  font-family:var(--body);font-size:13px;font-weight:500;border-radius:999px;
+  padding:8px 14px;cursor:pointer;transition:all .12s ease;box-shadow:var(--shadow-sm);
+}
+.chip:hover{border-color:var(--accent);color:var(--accent-deep);}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 5px 16px rgba(76,91,245,.32);}
+.levels{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px;box-shadow:var(--shadow-sm);}
+.lvl{
+  flex:1;border:none;background:transparent;font-family:var(--display);font-weight:600;font-size:15px;color:var(--muted);
+  border-radius:8px;padding:8px 0;cursor:pointer;transition:all .12s ease;
+}
+.lvl:hover{color:var(--ink);}
+.lvl[aria-pressed="true"]{background:var(--ink);color:#fff;}
+.lvl-cap{font-size:11.5px;color:var(--muted);margin:6px 4px 16px;}
+.lvl-cap b{color:var(--ink);font-weight:600;}
+
+/* problem card */
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:18px;
+  box-shadow:var(--shadow);padding:24px 22px;margin-bottom:16px;position:relative;overflow:hidden;
+}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--accent),#7b87f8);}
+.q-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;}
+.q-topic{font-family:var(--display);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+.methods-btn{
+  border:1px solid var(--line);background:transparent;color:var(--accent-deep);
+  font-family:var(--body);font-size:12px;font-weight:600;border-radius:999px;padding:5px 12px;cursor:pointer;flex:none;
+}
+.methods-btn:hover{background:var(--accent-soft);border-color:var(--accent);}
+.equation{font-family:var(--display);font-weight:700;letter-spacing:-.01em;color:var(--ink);}
+.equation.big{font-size:42px;line-height:1.12;}
+.equation.text{font-size:22px;line-height:1.32;font-weight:600;}
+.eq-line{margin-bottom:20px;min-height:50px;display:flex;align-items:center;}
+.answer-row{display:flex;gap:10px;}
+input.answer{
+  flex:1;min-width:0;font-family:var(--display);font-size:26px;font-weight:600;color:var(--ink);
+  border:2px solid var(--line);border-radius:12px;padding:10px 16px;background:#fafbfe;
+  text-align:center;outline:none;transition:border-color .12s ease, background .12s ease;
+}
+input.answer::placeholder{color:#c0c9d9;font-weight:400;}
+input.answer:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px rgba(76,91,245,.12);}
+input.answer.correct{border-color:var(--ok);background:var(--ok-soft);}
+input.answer.wrong{border-color:var(--err);background:var(--err-soft);}
+.btn{
+  font-family:var(--display);font-weight:600;font-size:16px;border:none;border-radius:12px;
+  padding:12px 22px;cursor:pointer;flex:none;white-space:nowrap;transition:transform .08s ease, background .12s ease, box-shadow .12s ease;
+}
+.btn:active{transform:translateY(1px);}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 6px 18px rgba(76,91,245,.32);}
+.btn-primary:hover{background:var(--accent-deep);}
+.hint-link{margin-top:14px;text-align:center;}
+.hint-link button{background:none;border:none;color:var(--muted);font-family:var(--body);font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
+.hint-link button:hover{color:var(--accent-deep);}
+
+/* feedback */
+.feedback{margin-top:20px;border-top:1px dashed var(--line);padding-top:18px;display:none;}
+.feedback.show{display:block;animation:fade .2s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+.verdict{font-family:var(--display);font-weight:700;font-size:18px;display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap;}
+.verdict.ok{color:var(--ok);}
+.verdict.no{color:var(--err);}
+.verdict .ans{color:var(--ink);font-weight:600;}
+.verdict .neutral{color:var(--muted);font-weight:600;font-size:14.5px;}
+.method-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.mpill{
+  border:1px solid var(--line);background:#f7f9fc;color:#41506a;font-family:var(--body);
+  font-size:12px;font-weight:600;border-radius:999px;padding:5px 12px;cursor:pointer;
+}
+.mpill[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff;}
+.steps{list-style:none;margin:0;padding:0;counter-reset:s;}
+.steps li{
+  position:relative;padding:8px 0 8px 32px;font-family:var(--display);font-size:15.5px;color:var(--ink);
+  border-bottom:1px solid #f1f4f9;
+}
+.steps li:last-child{border-bottom:none;color:var(--accent-deep);font-weight:700;}
+.steps li::before{
+  counter-increment:s;content:counter(s);position:absolute;left:0;top:9px;
+  width:20px;height:20px;border-radius:6px;background:var(--accent-soft);color:var(--accent-deep);
+  font-family:var(--body);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;
+}
+
+/* insight strip */
+.insight{
+  display:none;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--gold);
+  border-radius:12px;padding:11px 14px;font-size:13px;color:#41506a;box-shadow:var(--shadow-sm);margin-bottom:16px;
+}
+.insight.show{display:block;}
+.insight b{color:var(--ink);}
+
+/* ---------- MODALS ---------- */
+.overlay{
+  position:fixed;inset:0;background:rgba(13,21,48,.5);backdrop-filter:blur(3px);
+  display:none;align-items:flex-end;justify-content:center;z-index:50;
+}
+.overlay.show{display:flex;}
+.modal{
+  background:var(--card);width:100%;max-width:620px;max-height:88vh;overflow-y:auto;
+  border-radius:22px 22px 0 0;padding:22px 20px calc(30px + env(safe-area-inset-bottom));
+  box-shadow:var(--shadow-lg);animation:slideup .22s ease;
+}
+@keyframes slideup{from{transform:translateY(34px);opacity:.6;}to{transform:none;opacity:1;}}
+@media(min-width:660px){.overlay{align-items:center;padding:24px;}.modal{border-radius:22px;}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;position:sticky;top:-22px;background:var(--card);padding:6px 0;z-index:2;}
+.modal-head h2{font-family:var(--display);font-size:20px;font-weight:700;margin:0;}
+.close{border:none;background:#f0f3f8;width:32px;height:32px;border-radius:50%;font-size:17px;color:var(--muted);cursor:pointer;line-height:1;flex:none;}
+.close:hover{background:var(--line);color:var(--ink);}
+
+.method-block{margin-top:16px;}
+.method-block h3{font-family:var(--display);font-size:15px;font-weight:600;margin:0 0 4px;color:var(--accent-deep);}
+.method-block p{margin:0;font-size:14px;color:#33415c;}
+.method-block .ex{display:inline-block;margin-top:6px;font-family:var(--display);font-size:13.5px;background:#f6f8fc;border:1px solid var(--line);border-radius:8px;padding:5px 10px;color:var(--ink);}
+
+/* history modal */
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:8px 0 18px;}
+.kpi{background:#f7f9fc;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;}
+.kpi .n{font-family:var(--display);font-size:21px;font-weight:700;}
+.kpi .l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:2px;font-weight:600;}
+.hm-title{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700;margin:0 0 8px;}
+.hm{display:flex;gap:3px;overflow-x:auto;padding-bottom:6px;margin-bottom:18px;}
+.hm-col{display:flex;flex-direction:column;gap:3px;}
+.hm-c{width:12px;height:12px;border-radius:3px;background:#e8ecf4;flex:none;}
+.hm-c.l1{background:#c8d2fb;}
+.hm-c.l2{background:#94a2f8;}
+.hm-c.l3{background:#5b6cf3;}
+.hm-c.l4{background:#3341d6;}
+.hm-c.empty{background:transparent;}
+.day-item{border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden;background:var(--card);}
+.day-item summary{
+  list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:12px 14px;cursor:pointer;font-size:13.5px;
+}
+.day-item summary::-webkit-details-marker{display:none;}
+.day-item summary .d{font-weight:600;text-transform:capitalize;}
+.day-item summary .m{display:flex;gap:12px;color:var(--muted);font-size:12.5px;white-space:nowrap;}
+.day-item summary .m b{color:var(--ink);font-family:var(--display);}
+.day-item[open] summary{border-bottom:1px solid var(--line);background:#fafbfe;}
+.day-detail{padding:10px 14px 14px;}
+.dd-topic{margin-bottom:10px;}
+.dd-topic .t-name{font-size:12.5px;font-weight:700;margin-bottom:5px;}
+.dd-levels{display:flex;flex-wrap:wrap;gap:6px;}
+.dd-lv{
+  font-family:var(--display);font-size:12px;background:#f4f6fb;border:1px solid var(--line);
+  border-radius:8px;padding:4px 9px;color:#33415c;
+}
+.dd-lv b{color:var(--ink);}
+.dd-lv .pct{color:var(--accent-deep);font-weight:700;}
+.empty-msg{text-align:center;color:var(--muted);font-size:13.5px;padding:20px 0;}
+.reset{margin-top:18px;width:100%;background:transparent;border:1px solid var(--line);color:var(--err);font-family:var(--body);font-weight:500;font-size:13.5px;border-radius:10px;padding:11px;cursor:pointer;}
+.reset:hover{background:var(--err-soft);border-color:var(--err);}
+
+.footer{text-align:center;font-size:11.5px;color:#a5afc2;margin-top:26px;}
+:focus-visible{outline:3px solid rgba(76,91,245,.45);outline-offset:2px;border-radius:8px;}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important;}}
+@media (max-width:420px){
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .equation.big{font-size:36px;}
+  .hero h1{font-size:24px;}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-in">
+    <div>
+      <div class="eyebrow">Dnevni trening</div>
+      <h1>Trener matematike</h1>
+      <div class="date" id="heroDate"></div>
+    </div>
+    <button class="ring-wrap" id="goalBtn" title="Klikni za promjenu dnevnog cilja">
+      <div class="ring">
+        <svg width="76" height="76" viewBox="0 0 76 76">
+          <circle class="track" cx="38" cy="38" r="32" fill="none" stroke-width="6"/>
+          <circle class="fill" id="ringFill" cx="38" cy="38" r="32" fill="none" stroke-width="6"
+                  stroke-dasharray="201" stroke-dashoffset="201"/>
+        </svg>
+        <div class="ring-num"><b id="ringNum">0</b><span id="ringGoal">/ 30</span></div>
+      </div>
+      <div class="ring-cap">dnevni cilj</div>
+    </button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="stats">
+    <button class="stat" data-open="history"><span class="go">›</span><div class="num" id="stTotal">0</div><div class="lbl">Riješeno</div><div class="sub" id="stToday">danas 0</div></button>
+    <button class="stat" data-open="history"><span class="go">›</span><div class="num" id="stAcc">–</div><div class="lbl">Točnost</div><div class="sub" id="stAccToday">danas –</div></button>
+    <button class="stat gold" data-open="history"><span class="go">›</span><div class="num" id="stStreak">0</div><div class="lbl">Niz</div><div class="sub">zaredom točno</div></button>
+    <button class="stat gold" data-open="history"><span class="go">›</span><div class="num" id="stBest">0</div><div class="lbl">Rekord</div><div class="sub">najbolji niz</div></button>
+  </div>
+
+  <div class="insight" id="insight"></div>
+
+  <div class="panel-label">Tema</div>
+  <div class="chips" id="topicChips"></div>
+
+  <div class="panel-label">Razina</div>
+  <div class="levels" id="levelChips"></div>
+  <div class="lvl-cap" id="lvlCap"></div>
+
+  <div class="card">
+    <div class="q-top">
+      <span class="q-topic" id="qTopic">Zbrajanje</span>
+      <button class="methods-btn" id="methodsBtn">ⓘ Sve metode</button>
+    </div>
+    <div class="eq-line"><span class="equation big" id="equation">…</span></div>
+    <div class="answer-row">
+      <input class="answer" id="answer" type="text" inputmode="decimal" autocomplete="off" placeholder="?" aria-label="Tvoj odgovor">
+      <button class="btn btn-primary" id="actionBtn">Provjeri</button>
+    </div>
+    <div class="hint-link"><button id="hintBtn">Zapeo/la si? Prikaži postupak</button></div>
+
+    <div class="feedback" id="feedback" aria-live="polite">
+      <div class="verdict" id="verdict"></div>
+      <div class="method-pills" id="methodPills"></div>
+      <ol class="steps" id="steps"></ol>
+    </div>
+  </div>
+
+  <div class="footer">Napredak se sprema na ovom uređaju · dizajn David Atlija</div>
+</div>
+
+<!-- Methods modal -->
+<div class="overlay" id="methodsOverlay">
+  <div class="modal">
+    <div class="modal-head"><h2 id="methodsTitle">Metode</h2><button class="close" data-close>×</button></div>
+    <div id="methodsBody"></div>
+  </div>
+</div>
+
+<!-- History modal -->
+<div class="overlay" id="historyOverlay">
+  <div class="modal">
+    <div class="modal-head"><h2>Statistika po danima</h2><button class="close" data-close>×</button></div>
+    <div class="kpis">
+      <div class="kpi"><div class="n" id="hTotal">0</div><div class="l">Ukupno</div></div>
+      <div class="kpi"><div class="n" id="hAcc">–</div><div class="l">Točnost</div></div>
+      <div class="kpi"><div class="n" id="hDays">0</div><div class="l">Aktivnih dana</div></div>
+    </div>
+    <div class="hm-title">Aktivnost · zadnjih 15 tjedana</div>
+    <div id="heatmap"></div>
+    <div class="hm-title">Dnevnik</div>
+    <div id="dayList"></div>
+    <button class="reset" id="resetBtn">Izbriši sav napredak</button>
+  </div>
+</div>
+
+<script>
+/* ============ Pomoćne funkcije ============ */
+const rnd=(min,max)=>Math.floor(Math.random()*(max-min+1))+min;
+const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
+const round=(x,dp=6)=>Math.round((x+Number.EPSILON)*10**dp)/10**dp;
+function fmt(n){
+  if(!isFinite(n))return String(n);
+  let s=(Math.round((n+Number.EPSILON)*1e6)/1e6).toString();
+  return s.replace('.',',');
+}
+const MINUS='\u2212', TIMES='\u00D7', DIV='\u00F7';
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+
+/* ============ Generatori (5 razina, više metoda) ============ */
+/* Svaki vraća {topic, render, text, answer, methods:[{name,steps[]}]} */
+
+/* --- pomoćnici za metode --- */
+function mRoundAdd(a,b,ans){
+  const br=Math.round(b/10)*10, d=br-b, s=[];
+  if(d===0){ s.push(`${fmt(a)} + ${fmt(b)} = ${fmt(ans)}`); return {name:'Izravno',steps:s}; }
+  s.push(`Zaokruži ${fmt(b)} na ${fmt(br)}.`);
+  s.push(`${fmt(a)} + ${fmt(br)} = ${fmt(a+br)}`);
+  if(d>0) s.push(`Oduzmi višak: ${fmt(a+br)} ${MINUS} ${fmt(d)} = ${fmt(ans)}`);
+  else s.push(`Dodaj manjak: ${fmt(a+br)} + ${fmt(-d)} = ${fmt(ans)}`);
+  return {name:'Zaokruživanje',steps:s};
+}
+function mPlaceAdd(a,b,ans){
+  const ta=Math.floor(a/10)*10, ua=a%10, tb=Math.floor(b/10)*10, ub=b%10;
+  const s=[];
+  s.push(`Rastavi: ${fmt(a)} = ${fmt(ta)} + ${fmt(ua)}, ${fmt(b)} = ${fmt(tb)} + ${fmt(ub)}.`);
+  s.push(`Okrugli dijelovi: ${fmt(ta)} + ${fmt(tb)} = ${fmt(ta+tb)}`);
+  s.push(`Jedinice: ${fmt(ua)} + ${fmt(ub)} = ${fmt(ua+ub)}`);
+  s.push(`Zbroji: ${fmt(ta+tb)} + ${fmt(ua+ub)} = ${fmt(ans)}`);
+  return {name:'Mjesne vrijednosti',steps:s};
+}
+function genZbrajanje(level){
+  let a,b,c=null;
+  if(level===1){a=rnd(6,49);b=rnd(6,49);}
+  else if(level===2){a=rnd(25,99);b=rnd(25,99);}
+  else if(level===3){a=rnd(110,499);b=rnd(25,99);}
+  else if(level===4){a=rnd(150,899);b=rnd(150,899);}
+  else{ if(Math.random()<.5){a=rnd(250,999);b=rnd(150,899);c=rnd(25,99);} else {a=rnd(1100,4999);b=rnd(250,999);} }
+  const ans=a+b+(c||0);
+  const methods=[];
+  if(c){
+    const s1=[`Zbrajaj redom: ${fmt(a)} + ${fmt(b)} = ${fmt(a+b)}`,`Zatim: ${fmt(a+b)} + ${fmt(c)} = ${fmt(ans)}`];
+    methods.push({name:'Redom',steps:s1});
+    if((b%10 + c%10)%10===0 && b%10!==0){
+      methods.push({name:'Grupiraj pametno',steps:[
+        `Uoči da ${fmt(b)} + ${fmt(c)} daje okrugao zbroj: ${fmt(b+c)}.`,
+        `${fmt(a)} + ${fmt(b+c)} = ${fmt(ans)}`]});
+    } else {
+      methods.push({name:'Mjesne vrijednosti',steps:[
+        `Okrugli dijelovi: ${fmt(Math.floor(a/10)*10)} + ${fmt(Math.floor(b/10)*10)} + ${fmt(Math.floor(c/10)*10)} = ${fmt(Math.floor(a/10)*10+Math.floor(b/10)*10+Math.floor(c/10)*10)}`,
+        `Jedinice: ${fmt(a%10)} + ${fmt(b%10)} + ${fmt(c%10)} = ${fmt(a%10+b%10+c%10)}`,
+        `Zbroji: ${fmt(Math.floor(a/10)*10+Math.floor(b/10)*10+Math.floor(c/10)*10)} + ${fmt(a%10+b%10+c%10)} = ${fmt(ans)}`]});
+    }
+  }else{
+    methods.push(mRoundAdd(a,b,ans));
+    methods.push(mPlaceAdd(a,b,ans));
+  }
+  return {topic:'zbrajanje',render:'equation',text:`${fmt(a)} + ${fmt(b)}${c?` + ${fmt(c)}`:''}`,answer:ans,methods};
+}
+
+function genOduzimanje(level){
+  let a,b;
+  if(level===1){a=rnd(20,80);b=rnd(6,a-5);}
+  else if(level===2){a=rnd(50,99);b=rnd(15,a-10);}
+  else if(level===3){a=rnd(120,600);b=rnd(25,99);}
+  else if(level===4){a=rnd(300,950);b=rnd(120,a-80);}
+  else{a=rnd(1000,5000);b=rnd(250,950);}
+  const ans=a-b;
+  const methods=[];
+  const u=b%10, k=(10-u)%10;
+  if(u===0){
+    methods.push({name:'Izravno',steps:[`${fmt(b)} je okrugao broj.`,`${fmt(a)} ${MINUS} ${fmt(b)} = ${fmt(ans)}`]});
+  }else{
+    const br=b+k;
+    methods.push({name:'Zaokruživanje',steps:[
+      `Zaokruži ${fmt(b)} naviše na ${fmt(br)}.`,
+      `${fmt(a)} ${MINUS} ${fmt(br)} = ${fmt(a-br)}`,
+      `Vrati višak: ${fmt(a-br)} + ${fmt(k)} = ${fmt(ans)}`]});
+    methods.push({name:'Isti pomak',steps:[
+      `Dodaj ${fmt(k)} objema stranama — razlika se ne mijenja.`,
+      `${fmt(a)} ${MINUS} ${fmt(b)} = ${fmt(a+k)} ${MINUS} ${fmt(br)}`,
+      `${fmt(a+k)} ${MINUS} ${fmt(br)} = ${fmt(ans)}`]});
+  }
+  const tb=Math.floor(b/10)*10;
+  if(tb>0 && u>0){
+    methods.push({name:'Po dijelovima',steps:[
+      `Oduzmi prvo desetice: ${fmt(a)} ${MINUS} ${fmt(tb)} = ${fmt(a-tb)}`,
+      `Zatim jedinice: ${fmt(a-tb)} ${MINUS} ${fmt(u)} = ${fmt(ans)}`]});
+  }
+  return {topic:'oduzimanje',render:'equation',text:`${fmt(a)} ${MINUS} ${fmt(b)}`,answer:ans,methods};
+}
+
+function mulSplit(big,small,ans){
+  const t=Math.floor(big/10)*10, u=big%10, s=[];
+  if(u===0){ s.push(`${fmt(big)} je okrugao broj.`); s.push(`${fmt(small)} ${TIMES} ${fmt(big)} = ${fmt(ans)}`); return {name:'Izravno',steps:s}; }
+  s.push(`Rastavi ${fmt(big)} = ${fmt(t)} + ${fmt(u)}.`);
+  s.push(`${fmt(small)} ${TIMES} ${fmt(t)} = ${fmt(small*t)}`);
+  s.push(`${fmt(small)} ${TIMES} ${fmt(u)} = ${fmt(small*u)}`);
+  s.push(`Zbroji: ${fmt(small*t)} + ${fmt(small*u)} = ${fmt(ans)}`);
+  return {name:`Rastavi ${fmt(big)}`,steps:s};
+}
+function genMnozenje(level){
+  let a,b;
+  if(level===1){a=rnd(3,9);b=rnd(3,9);}
+  else if(level===2){a=rnd(3,9);b=rnd(11,15);}
+  else if(level===3){a=rnd(3,9);b=rnd(13,49);}
+  else if(level===4){a=rnd(11,19);b=rnd(11,19);}
+  else{a=rnd(12,39);b=rnd(12,39);}
+  const ans=a*b;
+  const methods=[];
+  if(a<10&&b<10){
+    methods.push({name:'Tablica množenja',steps:[`Iz tablice: ${fmt(a)} ${TIMES} ${fmt(b)} = ${fmt(ans)}`]});
+    if(a===9||b===9){const o=a===9?b:a;
+      methods.push({name:'Trik s 9',steps:[`9 ${TIMES} ${fmt(o)} = 10 ${TIMES} ${fmt(o)} ${MINUS} ${fmt(o)}`,`${fmt(10*o)} ${MINUS} ${fmt(o)} = ${fmt(ans)}`]});}
+    if(a===5||b===5){const o=a===5?b:a;
+      methods.push({name:'Trik s 5',steps:[`5 ${TIMES} ${fmt(o)} = 10 ${TIMES} ${fmt(o)} ÷ 2`,`${fmt(10*o)} ${DIV} 2 = ${fmt(ans)}`]});}
+  }else if(a>=10&&b>=10){
+    methods.push(mulSplit(b,a,ans));
+    const alt=mulSplit(a,b,ans); alt.name=`Rastavi ${fmt(a)}`;
+    if(a%10!==0) methods.push(alt);
+    if(a>=11&&a<=19&&b>=11&&b<=19){
+      const ua=a%10, ub=b%10;
+      methods.push({name:'Trik za 11–19',steps:[
+        `Zbroji prvi broj i jedinice drugog: ${fmt(a)} + ${fmt(ub)} = ${fmt(a+ub)}.`,
+        `Pomnoži s 10: ${fmt((a+ub)*10)}`,
+        `Pomnoži jedinice: ${fmt(ua)} ${TIMES} ${fmt(ub)} = ${fmt(ua*ub)}`,
+        `${fmt((a+ub)*10)} + ${fmt(ua*ub)} = ${fmt(ans)}`]});
+    }
+    if((a%10===5&&b%2===0)||(b%10===5&&a%2===0)){
+      const five=a%10===5?a:b, even=a%10===5?b:a;
+      methods.push({name:'Prepolovi i udvostruči',steps:[
+        `Prepolovi ${fmt(even)}, udvostruči ${fmt(five)} — umnožak ostaje isti.`,
+        `${fmt(even)} ${TIMES} ${fmt(five)} = ${fmt(even/2)} ${TIMES} ${fmt(five*2)}`,
+        `${fmt(even/2)} ${TIMES} ${fmt(five*2)} = ${fmt(ans)}`]});
+    }
+  }else{
+    const big=Math.max(a,b), small=Math.min(a,b);
+    methods.push(mulSplit(big,small,ans));
+    const u=big%10;
+    if(u>=8&&big>=13){
+      const br=big+(10-u);
+      methods.push({name:'Zaokruživanje',steps:[
+        `Zaokruži ${fmt(big)} na ${fmt(br)}.`,
+        `${fmt(small)} ${TIMES} ${fmt(br)} = ${fmt(small*br)}`,
+        `Oduzmi višak: ${fmt(small*br)} ${MINUS} ${fmt(small)} ${TIMES} ${fmt(10-u)} = ${fmt(small*br)} ${MINUS} ${fmt(small*(10-u))} = ${fmt(ans)}`]});
+    }
+    if(small===5){
+      methods.push({name:'Trik s 5',steps:[`5 ${TIMES} ${fmt(big)} = 10 ${TIMES} ${fmt(big)} ÷ 2`,`${fmt(10*big)} ${DIV} 2 = ${fmt(ans)}`]});
+    }
+    if(small===9){
+      methods.push({name:'Trik s 9',steps:[`9 ${TIMES} ${fmt(big)} = 10 ${TIMES} ${fmt(big)} ${MINUS} ${fmt(big)}`,`${fmt(10*big)} ${MINUS} ${fmt(big)} = ${fmt(ans)}`]});
+    }
+  }
+  return {topic:'mnozenje',render:'equation',text:`${fmt(a)} ${TIMES} ${fmt(b)}`,answer:ans,methods:methods.slice(0,3)};
+}
+
+function genDijeljenje(level){
+  let d,q;
+  if(level===1){d=rnd(2,9);q=rnd(2,9);}
+  else if(level===2){d=rnd(3,9);q=rnd(11,19);}
+  else if(level===3){d=rnd(3,9);q=rnd(12,49);}
+  else if(level===4){d=rnd(11,15);q=rnd(11,29);}
+  else{d=rnd(12,25);q=rnd(12,49);}
+  const N=d*q, ans=q;
+  const methods=[];
+  const qt=Math.floor(q/10)*10, qu=q%10;
+  if(q>=10&&qu>0){
+    methods.push({name:'Rastavi djeljenik',steps:[
+      `Rastavi ${fmt(N)} = ${fmt(d*qt)} + ${fmt(d*qu)}.`,
+      `${fmt(d*qt)} ${DIV} ${fmt(d)} = ${fmt(qt)}`,
+      `${fmt(d*qu)} ${DIV} ${fmt(d)} = ${fmt(qu)}`,
+      `Zbroji: ${fmt(qt)} + ${fmt(qu)} = ${fmt(ans)}`]});
+  }
+  methods.push({name:'Poveži s množenjem',steps:[
+    `Pitaj: koliko puta ${fmt(d)} stane u ${fmt(N)}?`,
+    `${fmt(d)} ${TIMES} ${fmt(q)} = ${fmt(N)}`,
+    `Dakle ${fmt(N)} ${DIV} ${fmt(d)} = ${fmt(ans)}`]});
+  if(d%2===0){
+    methods.push({name:'Skrati (prepolovi)',steps:[
+      `Prepolovi obje strane: ${fmt(N)} ${DIV} ${fmt(d)} = ${fmt(N/2)} ${DIV} ${fmt(d/2)}`,
+      `${fmt(N/2)} ${DIV} ${fmt(d/2)} = ${fmt(ans)}`]});
+  }
+  return {topic:'dijeljenje',render:'equation',text:`${fmt(N)} ${DIV} ${fmt(d)}`,answer:ans,methods:methods.slice(0,3)};
+}
+
+function estSteps(a,op,b,ans){
+  const ra=Math.round(a), rb=Math.round(b);
+  let est;
+  if(op==='+')est=ra+rb; else if(op==='-')est=ra-rb; else est=ra*rb;
+  const sym=op==='+'?'+':(op==='-'?MINUS:TIMES);
+  return {name:'Procjena za kontrolu',steps:[
+    `Zaokruži na cijele: ${fmt(a)} → ${fmt(ra)}, ${fmt(b)} → ${fmt(rb)}.`,
+    `Procjena: ${fmt(ra)} ${sym} ${fmt(rb)} \u2248 ${fmt(est)}`,
+    `Točan rezultat mora biti blizu: ${fmt(ans)}`]};
+}
+function genDecimale(level){
+  if(level===1){
+    const ai=rnd(11,99); let bi=rnd(11,99); const op=pick(['+','-']);
+    if(op==='-'&&bi>=ai)bi=rnd(5,ai-1);
+    const a=ai/10,b=bi/10;
+    const ans=op==='+'?round(a+b,2):round(a-b,2);
+    const sym=op==='+'?'+':MINUS;
+    return {topic:'decimale',render:'equation',text:`${fmt(a)} ${sym} ${fmt(b)}`,answer:ans,methods:[
+      {name:'Poravnaj zareze',steps:[
+        `Poravnaj decimalne zareze i računaj kao s cijelim brojevima.`,
+        `${fmt(ai)} ${sym} ${fmt(bi)} = ${fmt(op==='+'?ai+bi:ai-bi)} → vrati zarez (1 mjesto).`,
+        `${fmt(a)} ${sym} ${fmt(b)} = ${fmt(ans)}`]},
+      estSteps(a,op,b,ans)]};
+  }
+  if(level===2){
+    const ai=rnd(101,999); let bi=rnd(11,99); const op=pick(['+','-']);
+    const a=ai/100,b=bi/10;
+    let ans=op==='+'?round(a+b,2):round(a-b,2);
+    if(op==='-'&&ans<=0){return genDecimale(2);}
+    const sym=op==='+'?'+':MINUS;
+    return {topic:'decimale',render:'equation',text:`${fmt(a)} ${sym} ${fmt(b)}`,answer:ans,methods:[
+      {name:'Poravnaj zareze',steps:[
+        `Poravnaj decimalne zareze pa računaj u stotinkama.`,
+        `${fmt(ai)} ${sym} ${fmt(bi*10)} = ${fmt(op==='+'?ai+bi*10:ai-bi*10)} stotinki → vrati zarez (2 mjesta).`,
+        `${fmt(a)} ${sym} ${fmt(b)} = ${fmt(ans)}`]},
+      estSteps(a,op,b,ans)]};
+  }
+  if(level===3){
+    let ai=rnd(11,89); while(ai%10===0)ai=rnd(11,89);
+    const w=rnd(2,9), a=ai/10, ans=round(a*w,1);
+    return {topic:'decimale',render:'equation',text:`${fmt(a)} ${TIMES} ${fmt(w)}`,answer:ans,methods:[
+      {name:'Bez zareza pa vrati',steps:[
+        `Množi bez zareza: ${fmt(ai)} ${TIMES} ${fmt(w)} = ${fmt(ai*w)}`,
+        `Jedno decimalno mjesto → vrati zarez.`,
+        `${fmt(a)} ${TIMES} ${fmt(w)} = ${fmt(ans)}`]},
+      estSteps(a,'*',w,ans)]};
+  }
+  if(level===4){
+    if(Math.random()<.5){
+      let ai=rnd(11,49),bi=rnd(11,39);
+      while(ai%10===0)ai=rnd(11,49);
+      while(bi%10===0)bi=rnd(11,39);
+      const a=ai/10,b=bi/10,ans=round(a*b,2);
+      return {topic:'decimale',render:'equation',text:`${fmt(a)} ${TIMES} ${fmt(b)}`,answer:ans,methods:[
+        {name:'Bez zareza pa vrati',steps:[
+          `Množi bez zareza: ${fmt(ai)} ${TIMES} ${fmt(bi)} = ${fmt(ai*bi)}`,
+          `Ukupno dva decimalna mjesta → vrati zarez.`,
+          `${fmt(a)} ${TIMES} ${fmt(b)} = ${fmt(ans)}`]},
+        estSteps(a,'*',b,ans)]};
+    }
+    const w=rnd(2,9); const q10=rnd(3,29); const ans=q10/10; const a=round(ans*w,1);
+    const a10=Math.round(a*10);
+    return {topic:'decimale',render:'equation',text:`${fmt(a)} ${DIV} ${fmt(w)}`,answer:ans,methods:[
+      {name:'Bez zareza pa vrati',steps:[
+        `Dijeli bez zareza: ${fmt(a10)} ${DIV} ${fmt(w)} = ${fmt(q10)}`,
+        `Djeljenik je imao 1 decimalno mjesto → vrati zarez.`,
+        `${fmt(a)} ${DIV} ${fmt(w)} = ${fmt(ans)}`]},
+      {name:'Poveži s množenjem',steps:[
+        `Pitaj: ${fmt(w)} ${TIMES} koliko = ${fmt(a)}?`,
+        `${fmt(w)} ${TIMES} ${fmt(ans)} = ${fmt(a)}`,
+        `Dakle ${fmt(a)} ${DIV} ${fmt(w)} = ${fmt(ans)}`]}]};
+  }
+  /* level 5 */
+  if(Math.random()<.5){
+    const b=pick([0.2,0.3,0.4,0.5,0.6,0.8,1.2,1.5,2.5]); const r=rnd(3,12);
+    const a=round(b*r,2), ans=r;
+    const shift=(String(b).split('.')[1]||'').length;
+    const mul=10**shift;
+    return {topic:'decimale',render:'equation',text:`${fmt(a)} ${DIV} ${fmt(b)}`,answer:ans,methods:[
+      {name:'Pomakni zarez',steps:[
+        `Pomnoži obje strane s ${fmt(mul)} da djelitelj postane cijeli broj.`,
+        `${fmt(a)} ${DIV} ${fmt(b)} = ${fmt(round(a*mul,2))} ${DIV} ${fmt(round(b*mul,2))}`,
+        `${fmt(round(a*mul,2))} ${DIV} ${fmt(round(b*mul,2))} = ${fmt(ans)}`]},
+      {name:'Poveži s množenjem',steps:[
+        `Pitaj: ${fmt(b)} ${TIMES} koliko = ${fmt(a)}?`,
+        `${fmt(b)} ${TIMES} ${fmt(ans)} = ${fmt(a)}`,
+        `Dakle ${fmt(a)} ${DIV} ${fmt(b)} = ${fmt(ans)}`]}]};
+  }
+  const base=rnd(11,899)/ (Math.random()<.5?10:100);
+  const k=pick([10,100,1000]); const op=pick(['*','/']);
+  const ans=op==='*'?round(base*k,4):round(base/k,5);
+  const places=String(k).length-1;
+  const sym=op==='*'?TIMES:DIV;
+  return {topic:'decimale',render:'equation',text:`${fmt(base)} ${sym} ${fmt(k)}`,answer:ans,methods:[
+    {name:'Pomakni zarez',steps:[
+      op==='*'?`Množenje s ${fmt(k)} → pomakni zarez ${places} ${places===1?'mjesto':'mjesta'} udesno.`:`Dijeljenje s ${fmt(k)} → pomakni zarez ${places} ${places===1?'mjesto':'mjesta'} ulijevo.`,
+      `${fmt(base)} ${sym} ${fmt(k)} = ${fmt(ans)}`]}]};
+}
+
+/* --- postotci --- */
+function pctOfSteps(P,N){
+  const s=[]; const ans=round(P*N/100,4);
+  if(P===50){s.push(`50 % je polovina.`);s.push(`${fmt(N)} ${DIV} 2 = ${fmt(ans)}`);return s;}
+  if(P===25){s.push(`25 % je četvrtina.`);s.push(`${fmt(N)} ${DIV} 4 = ${fmt(ans)}`);return s;}
+  if(P===20){s.push(`20 % je petina.`);s.push(`${fmt(N)} ${DIV} 5 = ${fmt(ans)}`);return s;}
+  if(P===75){s.push(`75 % = 50 % + 25 %.`);s.push(`${fmt(N/2)} + ${fmt(N/4)} = ${fmt(ans)}`);return s;}
+  if(P===10){s.push(`10 % = pomakni zarez jedno mjesto ulijevo.`);s.push(`10 % od ${fmt(N)} = ${fmt(ans)}`);return s;}
+  if(P===5){s.push(`10 % od ${fmt(N)} = ${fmt(N/10)}.`);s.push(`5 % je pola toga: ${fmt(ans)}`);return s;}
+  const ten=round(N/10,4), one=round(N/100,4);
+  if(P%10===0){const k=P/10;
+    s.push(`10 % od ${fmt(N)} = ${fmt(ten)}.`);
+    s.push(`${fmt(P)} % = ${fmt(k)} ${TIMES} ${fmt(ten)} = ${fmt(ans)}`);return s;}
+  if(P%5===0){const k=Math.floor(P/10);
+    s.push(`10 % od ${fmt(N)} = ${fmt(ten)}, 5 % = ${fmt(ten/2)}.`);
+    s.push(`${fmt(P)} % = ${fmt(k)} ${TIMES} ${fmt(ten)} + ${fmt(ten/2)} = ${fmt(ans)}`);return s;}
+  s.push(`1 % od ${fmt(N)} = ${fmt(one)}.`);
+  s.push(`${fmt(P)} % = ${fmt(P)} ${TIMES} ${fmt(one)} = ${fmt(ans)}`);
+  return s;
+}
+function pctMultiplier(P,N,ans){
+  return {name:'Decimalni množitelj',steps:[
+    `${fmt(P)} % = ${fmt(P)} ${DIV} 100 = ${fmt(P/100)}`,
+    `${fmt(N)} ${TIMES} ${fmt(P/100)} = ${fmt(ans)}`]};
+}
+function genPostotci(level){
+  const nice1=[10,20,25,50], nice2=[5,15,30,40,75], niceAll=[5,10,15,20,25,30,40,50,60,75];
+  let kinds;
+  if(level===1)kinds=['of','of','inc','dec'];
+  else if(level===2)kinds=['of','of','inc','dec'];
+  else if(level===3)kinds=['of','inc','dec','ratio'];
+  else if(level===4)kinds=['of','inc','dec','ratio'];
+  else kinds=['of','inc','dec','ratio','reverse'];
+  const kind=pick(kinds);
+  let P,N;
+  if(level===1){P=pick(nice1);N=10*rnd(2,20);}
+  else if(level===2){P=pick(nice2);N=20*rnd(1,15);}
+  else if(level===3){P=pick(niceAll);N=10*rnd(4,40);}
+  else if(level===4){P=Math.random()<.5?pick(niceAll):rnd(6,19);N=10*rnd(5,60);}
+  else{P=rnd(6,94);N=10*rnd(5,80);}
+
+  if(kind==='of'){
+    const ans=round(P*N/100,2);
+    const methods=[{name:'Preko 10 % i 1 %',steps:pctOfSteps(P,N)},pctMultiplier(P,N,ans)];
+    if(N<=100&&N%5===0&&N!==P){
+      methods.push({name:'Trik zamjene',steps:[
+        `${fmt(P)} % od ${fmt(N)} = ${fmt(N)} % od ${fmt(P)}.`,
+        ...pctOfSteps(N,P)]});
+    }
+    return {topic:'postotci',render:'text',text:`Koliko je ${fmt(P)} % od ${fmt(N)}?`,answer:ans,methods:methods.slice(0,3)};
+  }
+  if(kind==='inc'||kind==='dec'){
+    const part=round(P*N/100,2);
+    const ans=kind==='inc'?round(N+part,2):round(N-part,2);
+    const mult=kind==='inc'?round(1+P/100,4):round(1-P/100,4);
+    const verb=kind==='inc'?'Uvećaj':'Umanji';
+    const opW=kind==='inc'?'Dodaj':'Oduzmi';
+    const sym=kind==='inc'?'+':MINUS;
+    return {topic:'postotci',render:'text',text:`${verb} ${fmt(N)} za ${fmt(P)} %.`,answer:ans,methods:[
+      {name:'Izračunaj pa '+(kind==='inc'?'dodaj':'oduzmi'),steps:[
+        ...pctOfSteps(P,N),
+        `${opW}: ${fmt(N)} ${sym} ${fmt(part)} = ${fmt(ans)}`]},
+      {name:'Množitelj',steps:[
+        `${verb}ti za ${fmt(P)} % = pomnožiti s ${kind==='inc'?'1 + ':'1 '+MINUS+' '}${fmt(P/100)} = ${fmt(mult)}.`,
+        `${fmt(N)} ${TIMES} ${fmt(mult)} = ${fmt(ans)}`]}]};
+  }
+  if(kind==='ratio'){
+    const B=pick([20,25,40,50,80,100,200,250,400,500]);
+    const pct=pick(niceAll);
+    const A=round(B*pct/100,2);
+    const methods=[{name:'Dio ÷ cjelina × 100',steps:[
+      `Podijeli dio s cjelinom: ${fmt(A)} ${DIV} ${fmt(B)} = ${fmt(round(A/B,4))}`,
+      `Pomnoži sa 100: ${fmt(round(A/B,4))} ${TIMES} 100 = ${fmt(pct)} %`]}];
+    if(100%B===0){
+      const f=100/B;
+      methods.push({name:'Skaliraj na 100',steps:[
+        `Pomnoži obje vrijednosti s ${fmt(f)} da cjelina postane 100.`,
+        `${fmt(A)} ${TIMES} ${fmt(f)} = ${fmt(A*f)} → dakle ${fmt(pct)} %`]});
+    }else if(B%100===0){
+      const f=B/100;
+      methods.push({name:'Skaliraj na 100',steps:[
+        `Podijeli obje vrijednosti s ${fmt(f)} da cjelina postane 100.`,
+        `${fmt(A)} ${DIV} ${fmt(f)} = ${fmt(round(A/f,2))} → dakle ${fmt(pct)} %`]});
+    }
+    return {topic:'postotci',render:'text',text:`Koliko je ${fmt(A)} od ${fmt(B)} u postotcima?`,answer:pct,methods};
+  }
+  /* reverse */
+  const W=10*rnd(2,40);
+  const Pr=pick(niceAll);
+  const A=round(W*Pr/100,2);
+  return {topic:'postotci',render:'text',text:`${fmt(Pr)} % nekog broja iznosi ${fmt(A)}. Koji je to broj?`,answer:W,methods:[
+    {name:'Preko 1 %',steps:[
+      `Ako je ${fmt(Pr)} % = ${fmt(A)}, onda je 1 % = ${fmt(A)} ${DIV} ${fmt(Pr)} = ${fmt(round(A/Pr,4))}.`,
+      `Cjelina (100 %) = ${fmt(round(A/Pr,4))} ${TIMES} 100 = ${fmt(W)}`]},
+    {name:'Podijeli množiteljem',steps:[
+      `${fmt(Pr)} % = ${fmt(Pr/100)}, pa je broj = ${fmt(A)} ${DIV} ${fmt(Pr/100)}.`,
+      `${fmt(A)} ${DIV} ${fmt(Pr/100)} = ${fmt(W)}`]}]};
+}
+
+const GENERATORS={zbrajanje:genZbrajanje,oduzimanje:genOduzimanje,mnozenje:genMnozenje,dijeljenje:genDijeljenje,decimale:genDecimale,postotci:genPostotci};
+const TOPIC_KEYS=['zbrajanje','oduzimanje','mnozenje','dijeljenje','decimale','postotci'];
+const TOPICS=[
+  {key:'zbrajanje',label:'Zbrajanje'},{key:'oduzimanje',label:'Oduzimanje'},
+  {key:'mnozenje',label:'Množenje'},{key:'dijeljenje',label:'Dijeljenje'},
+  {key:'decimale',label:'Decimale'},{key:'postotci',label:'Postotci'},{key:'mijesano',label:'Miješano'}];
+const LEVEL_NAMES={1:'Osnove',2:'Rutina',3:'Izazov',4:'Napredno',5:'Majstor'};
+
+function generate(topic,level){
+  const t=topic==='mijesano'?pick(TOPIC_KEYS):topic;
+  const p=GENERATORS[t](level);
+  return p;
+}
+
+/* ============ Priručnik metoda (ⓘ) ============ */
+const METHODS={
+  zbrajanje:{title:'Zbrajanje',blocks:[
+    {h:'Zaokruživanje',p:'Zaokruži jedan broj na najbližu deseticu, zbroji, pa ispravi za razliku.',ex:'47 + 38 → 47 + 40 = 87 → 87 − 2 = 85'},
+    {h:'Mjesne vrijednosti',p:'Zbroji zasebno okrugle dijelove, pa jedinice, pa spoji.',ex:'47 + 38 → (40+30) + (7+8) = 70 + 15 = 85'},
+    {h:'Grupiraj pametno',p:'Kod više brojeva prvo spoji one koji daju okrugao zbroj.',ex:'27 + 45 + 3 → (27+3) + 45 = 75'},
+    {h:'Slijeva nadesno',p:'Kreni od najvećih vrijednosti prema manjima — prirodnije za glavu.',ex:'340 + 270 → 500 + 110 = 610'}]},
+  oduzimanje:{title:'Oduzimanje',blocks:[
+    {h:'Zaokruživanje',p:'Oduzmi zaokruženi (veći, okrugli) broj, pa vrati koliko si previše oduzeo.',ex:'83 − 47 → 83 − 50 = 33 → 33 + 3 = 36'},
+    {h:'Isti pomak',p:'Dodaj isti broj objema stranama — razlika se ne mijenja, a račun postaje lakši.',ex:'83 − 47 = 86 − 50 = 36'},
+    {h:'Po dijelovima',p:'Oduzmi prvo desetice, zatim jedinice.',ex:'83 − 47 → 83 − 40 = 43 → 43 − 7 = 36'},
+    {h:'Brojanje unaprijed',p:'Pitaj “koliko od manjeg do većeg?” i zbrajaj skokove.',ex:'47 → 50 (+3) → 80 (+30) → 83 (+3) = 36'}]},
+  mnozenje:{title:'Množenje',blocks:[
+    {h:'Rastavljanje',p:'Rastavi jedan faktor na desetice i jedinice, pomnoži svaki dio, zbroji.',ex:'7 × 14 → 7×10 + 7×4 = 70 + 28 = 98'},
+    {h:'Trik s 9',p:'Pomnoži s 10 pa oduzmi taj broj jednom.',ex:'9 × 7 → 70 − 7 = 63'},
+    {h:'Trik s 5',p:'Pomnoži s 10 pa prepolovi.',ex:'5 × 46 → 460 ÷ 2 = 230'},
+    {h:'Trik za 11–19',p:'Za brojeve 11–19: zbroji prvi broj i jedinice drugog, ×10, dodaj umnožak jedinica.',ex:'13 × 14 → (13+4)×10 + 3×4 = 170 + 12 = 182'},
+    {h:'Prepolovi i udvostruči',p:'Jedan faktor prepolovi, drugi udvostruči — umnožak ostaje isti.',ex:'16 × 25 → 8 × 50 = 400'}]},
+  dijeljenje:{title:'Dijeljenje',blocks:[
+    {h:'Poveži s množenjem',p:'Pitaj “koliko puta djelitelj stane u broj?”.',ex:'56 ÷ 7 → 7 × 8 = 56 → 8'},
+    {h:'Rastavi djeljenik',p:'Podijeli broj na dijelove koje lako dijeliš, pa zbroji rezultate.',ex:'144 ÷ 6 → (120 + 24) ÷ 6 = 20 + 4 = 24'},
+    {h:'Skrati',p:'Podijeli i djeljenik i djelitelj istim brojem prije računa.',ex:'144 ÷ 12 → 72 ÷ 6 → 36 ÷ 3 = 12'}]},
+  decimale:{title:'Decimale',blocks:[
+    {h:'Poravnaj zareze',p:'Kod zbrajanja i oduzimanja poravnaj decimalne zareze pa računaj kao s cijelim brojevima.',ex:'3,4 + 2,7 = 6,1'},
+    {h:'Bez zareza pa vrati',p:'Množi/dijeli bez zareza, zatim prebroji decimalna mjesta i vrati zarez.',ex:'2,5 × 0,4 → 25×4 = 100 → 1,00'},
+    {h:'Pomakni zarez',p:'Kod dijeljenja decimalom pomakni zarez u oba broja dok djelitelj ne postane cijeli.',ex:'4,8 ÷ 0,6 → 48 ÷ 6 = 8'},
+    {h:'S 10, 100, 1000',p:'Množenje pomiče zarez udesno, dijeljenje ulijevo — za broj nula.',ex:'3,2 × 100 = 320'},
+    {h:'Procjena za kontrolu',p:'Zaokruži na cijele brojeve i provjeri je li rezultat razumne veličine.',ex:'4,9 × 6,1 ≈ 5 × 6 = 30'}]},
+  postotci:{title:'Postotci',blocks:[
+    {h:'Preko 10 % i 1 %',p:'10 % = broj ÷ 10, 1 % = broj ÷ 100. Sve ostalo slaži od tih blokova.',ex:'30 % od 240 = 3 × 24 = 72'},
+    {h:'Prečaci',p:'50 % = pola, 25 % = četvrtina, 20 % = petina, 75 % = 50 % + 25 %.',ex:'25 % od 60 = 15'},
+    {h:'Decimalni množitelj',p:'P % = P÷100. Pomnoži broj tim množiteljem.',ex:'18 % od 250 = 250 × 0,18 = 45'},
+    {h:'Trik zamjene',p:'P % od N jednako je N % od P — zamijeni ako je lakše.',ex:'4 % od 75 = 75 % od 4 = 3'},
+    {h:'Uvećanje / umanjenje',p:'Množi s (1 + P÷100) za uvećanje, (1 − P÷100) za umanjenje.',ex:'200 × 1,15 = 230'},
+    {h:'Obrnuti postotak',p:'Ako znaš dio i postotak: 1 % = dio ÷ P, cjelina = ×100.',ex:'20 % = 48 → 1 % = 2,4 → 240'}]}
+};
+
+/* ============ Stanje i spremanje ============ */
+const STORE_KEY='trener_mat_v2';
+let state={topic:'zbrajanje',level:1,current:null,activeMethod:0};
+let stats=loadStats();
+function blankStats(){return {goal:30,best:0,streak:0,days:{}};}
+function loadStats(){
+  try{const raw=localStorage.getItem(STORE_KEY); if(raw){const s=JSON.parse(raw); if(!s.days)s.days={}; if(!s.goal)s.goal=30; return s;}}catch(e){}
+  return blankStats();
+}
+function saveStats(){try{localStorage.setItem(STORE_KEY,JSON.stringify(stats));}catch(e){}}
+function keyOf(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+const todayKey=()=>keyOf(new Date());
+function getDay(k){return stats.days[k]||null;}
+function ensureToday(){
+  const k=todayKey();
+  if(!stats.days[k])stats.days[k]={t:0,c:0,bs:0,topics:{}};
+  return stats.days[k];
+}
+function record(topic,level,correct){
+  const day=ensureToday();
+  day.t++; if(correct)day.c++;
+  const tt=day.topics[topic]||(day.topics[topic]={});
+  const lv=tt[level]||(tt[level]=[0,0]);
+  lv[0]++; if(correct)lv[1]++;
+  if(correct){
+    stats.streak++;
+    if(stats.streak>stats.best)stats.best=stats.streak;
+    if(stats.streak>day.bs)day.bs=stats.streak;
+  }else stats.streak=0;
+  saveStats();
+}
+function totals(){
+  let t=0,c=0,days=0;
+  for(const k in stats.days){const d=stats.days[k]; t+=d.t; c+=d.c; if(d.t>0)days++;}
+  return {t,c,days};
+}
+function topicTotals(){
+  const agg={};
+  for(const k in stats.days){
+    const d=stats.days[k];
+    for(const tp in d.topics){
+      const a=agg[tp]||(agg[tp]=[0,0]);
+      for(const lv in d.topics[tp]){a[0]+=d.topics[tp][lv][0]; a[1]+=d.topics[tp][lv][1];}
+    }
+  }
+  return agg;
+}
+
+/* ============ Renderiranje ============ */
+const $=id=>document.getElementById(id);
+const equationEl=$('equation'),answerEl=$('answer'),actionBtn=$('actionBtn'),
+      feedbackEl=$('feedback'),verdictEl=$('verdict'),pillsEl=$('methodPills'),
+      stepsEl=$('steps'),qTopicEl=$('qTopic'),hintBtn=$('hintBtn');
+
+function heroDate(){
+  try{
+    const s=new Date().toLocaleDateString('hr-HR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    $('heroDate').textContent=s;
+  }catch(e){$('heroDate').textContent=todayKey();}
+}
+function renderRing(){
+  const day=getDay(todayKey());
+  const n=day?day.t:0, goal=stats.goal||30;
+  const frac=Math.min(1,n/goal);
+  const C=201;
+  const f=$('ringFill');
+  f.style.strokeDashoffset=String(C*(1-frac));
+  f.classList.toggle('done',frac>=1);
+  $('ringNum').textContent=n;
+  $('ringGoal').textContent='/ '+goal;
+}
+function renderStats(){
+  const tot=totals();
+  const day=getDay(todayKey());
+  $('stTotal').textContent=tot.t;
+  $('stToday').textContent='danas '+(day?day.t:0);
+  $('stAcc').textContent=tot.t?Math.round(tot.c/tot.t*100)+'%':'–';
+  $('stAccToday').textContent='danas '+(day&&day.t?Math.round(day.c/day.t*100)+'%':'–');
+  $('stStreak').textContent=stats.streak;
+  $('stBest').textContent=stats.best;
+  renderRing();
+  renderInsight();
+}
+function renderInsight(){
+  const agg=topicTotals();
+  let worst=null;
+  for(const tp in agg){
+    const[t,c]=agg[tp];
+    if(t>=10){const acc=c/t; if(!worst||acc<worst.acc)worst={tp,acc,t};}
+  }
+  const el=$('insight');
+  if(worst&&worst.acc<0.85){
+    const lbl=(TOPICS.find(x=>x.key===worst.tp)||{}).label||worst.tp;
+    el.innerHTML=`Najslabije područje: <b>${lbl}</b> (${Math.round(worst.acc*100)} % točnosti). Preporuka: odradi 10 zadataka iz te teme danas.`;
+    el.classList.add('show');
+  }else el.classList.remove('show');
+}
+
+function buildChips(){
+  const tc=$('topicChips');
+  TOPICS.forEach(t=>{
+    const b=document.createElement('button');
+    b.className='chip';b.textContent=t.label;b.setAttribute('aria-pressed',t.key===state.topic);
+    b.onclick=()=>{state.topic=t.key;syncChips();newProblem();};
+    tc.appendChild(b);
+  });
+  const lc=$('levelChips');
+  for(let i=1;i<=5;i++){
+    const b=document.createElement('button');
+    b.className='lvl';b.textContent=i;b.setAttribute('aria-pressed',i===state.level);
+    b.onclick=()=>{state.level=i;syncChips();newProblem();};
+    lc.appendChild(b);
+  }
+  syncLvlCap();
+}
+function syncChips(){
+  [...$('topicChips').children].forEach((b,i)=>b.setAttribute('aria-pressed',TOPICS[i].key===state.topic));
+  [...$('levelChips').children].forEach((b,i)=>b.setAttribute('aria-pressed',(i+1)===state.level));
+  syncLvlCap();
+}
+function syncLvlCap(){
+  $('lvlCap').innerHTML=`Razina ${state.level} · <b>${LEVEL_NAMES[state.level]}</b>`;
+}
+
+let answered=false;
+function newProblem(){
+  state.current=generate(state.topic,state.level);
+  state.activeMethod=0;
+  const p=state.current;
+  const label=(TOPICS.find(t=>t.key===p.topic)||{}).label||'';
+  qTopicEl.textContent=(state.topic==='mijesano'?'Miješano · ':'')+label+' · R'+state.level;
+  if(p.render==='equation'){equationEl.className='equation big';equationEl.textContent=p.text+' =';}
+  else{equationEl.className='equation text';equationEl.textContent=p.text;}
+  answerEl.value='';answerEl.className='answer';answerEl.disabled=false;
+  feedbackEl.classList.remove('show');
+  hintBtn.parentElement.style.display='block';
+  actionBtn.textContent='Provjeri';
+  answered=false;
+  answerEl.focus();
+}
+function parseNum(str){
+  if(str==null)return NaN;
+  str=String(str).trim().replace(/\s/g,'').replace(/%/g,'').replace(',', '.').replace(/\u2212/g,'-');
+  if(str==='')return NaN;
+  return Number(str);
+}
+function renderMethods(){
+  const p=state.current;
+  pillsEl.innerHTML='';
+  p.methods.forEach((m,i)=>{
+    const b=document.createElement('button');
+    b.className='mpill';b.textContent=m.name;b.setAttribute('aria-pressed',i===state.activeMethod);
+    b.onclick=()=>{state.activeMethod=i;renderMethods();};
+    pillsEl.appendChild(b);
+  });
+  stepsEl.innerHTML='';
+  (p.methods[state.activeMethod]||p.methods[0]).steps.forEach(s=>{
+    const li=document.createElement('li');li.textContent=s;stepsEl.appendChild(li);
+  });
+}
+function check(){
+  const p=state.current;
+  const val=parseNum(answerEl.value);
+  if(isNaN(val)){answerEl.focus();return;}
+  answered=true;
+  const correct=Math.abs(val-p.answer)<0.005;
+  record(p.topic,state.level,correct);
+  if(correct){
+    verdictEl.className='verdict ok';verdictEl.innerHTML='✓ Točno!';
+    answerEl.className='answer correct';
+  }else{
+    verdictEl.className='verdict no';
+    verdictEl.innerHTML=`✗ Netočno · točan odgovor je <span class="ans">${fmt(p.answer)}</span>`;
+    answerEl.className='answer wrong';
+  }
+  renderStats();
+  renderMethods();
+  feedbackEl.classList.add('show');
+  hintBtn.parentElement.style.display='none';
+  answerEl.disabled=true;
+  actionBtn.textContent='Sljedeći →';
+}
+function onAction(){if(!answered)check();else newProblem();}
+
+/* ============ Modali ============ */
+function openMethods(){
+  const key=state.current?state.current.topic:(state.topic==='mijesano'?'zbrajanje':state.topic);
+  const m=METHODS[key];
+  $('methodsTitle').textContent='Metode · '+m.title;
+  const body=$('methodsBody');body.innerHTML='';
+  m.blocks.forEach(b=>{
+    const d=document.createElement('div');d.className='method-block';
+    d.innerHTML=`<h3>${b.h}</h3><p>${b.p}</p><span class="ex">${b.ex}</span>`;
+    body.appendChild(d);
+  });
+  $('methodsOverlay').classList.add('show');
+}
+function heatmapHTML(){
+  const today=new Date();
+  const dow=(today.getDay()+6)%7;
+  const start=new Date(today);start.setDate(start.getDate()-dow-14*7);
+  let max=0;
+  for(const k in stats.days){if(stats.days[k].t>max)max=stats.days[k].t;}
+  let html='<div class="hm">';
+  for(let w=0;w<15;w++){
+    html+='<div class="hm-col">';
+    for(let r=0;r<7;r++){
+      const d=new Date(start);d.setDate(start.getDate()+w*7+r);
+      if(d>today){html+='<span class="hm-c empty"></span>';continue;}
+      const k=keyOf(d);
+      const v=stats.days[k]?stats.days[k].t:0;
+      const lvl=v===0?0:Math.max(1,Math.min(4,Math.ceil(v/Math.max(max,1)*4)));
+      html+=`<span class="hm-c l${lvl}" title="${k} · ${v}"></span>`;
+    }
+    html+='</div>';
+  }
+  return html+'</div>';
+}
+function dayDetailHTML(d){
+  let html='<div class="day-detail">';
+  const keys=Object.keys(d.topics);
+  if(!keys.length)html+='<div class="empty-msg">Nema detalja.</div>';
+  TOPIC_KEYS.forEach(tp=>{
+    if(!d.topics[tp])return;
+    const lbl=(TOPICS.find(x=>x.key===tp)||{}).label||tp;
+    html+=`<div class="dd-topic"><div class="t-name">${lbl}</div><div class="dd-levels">`;
+    for(let lv=1;lv<=5;lv++){
+      const rec=d.topics[tp][lv];
+      if(!rec)continue;
+      const pct=rec[0]?Math.round(rec[1]/rec[0]*100):0;
+      html+=`<span class="dd-lv">R${lv} · <b>${rec[1]}/${rec[0]}</b> · <span class="pct">${pct} %</span></span>`;
+    }
+    html+='</div></div>';
+  });
+  return html+'</div>';
+}
+function fmtDayLabel(k){
+  try{
+    const[y,m,d]=k.split('-').map(Number);
+    return new Date(y,m-1,d).toLocaleDateString('hr-HR',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  }catch(e){return k;}
+}
+function openHistory(){
+  const tot=totals();
+  $('hTotal').textContent=tot.t;
+  $('hAcc').textContent=tot.t?Math.round(tot.c/tot.t*100)+'%':'–';
+  $('hDays').textContent=tot.days;
+  $('heatmap').innerHTML=heatmapHTML();
+  const list=$('dayList');list.innerHTML='';
+  const keys=Object.keys(stats.days).filter(k=>stats.days[k].t>0).sort().reverse();
+  if(!keys.length){list.innerHTML='<div class="empty-msg">Još nema zabilježene vježbe. Riješi prvi zadatak!</div>';}
+  keys.forEach(k=>{
+    const d=stats.days[k];
+    const acc=d.t?Math.round(d.c/d.t*100):0;
+    const det=document.createElement('details');det.className='day-item';
+    det.innerHTML=`<summary><span class="d">${fmtDayLabel(k)}</span>
+      <span class="m"><span>riješeno <b>${d.t}</b></span><span>točnost <b>${acc} %</b></span><span>niz <b>${d.bs}</b></span></span></summary>`
+      +dayDetailHTML(d);
+    list.appendChild(det);
+  });
+  $('historyOverlay').classList.add('show');
+}
+function closeModals(){document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'));}
+
+/* ============ Događaji ============ */
+actionBtn.addEventListener('click',onAction);
+answerEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();onAction();}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&answered&&!document.querySelector('.overlay.show')){e.preventDefault();newProblem();}});
+hintBtn.addEventListener('click',()=>{
+  renderMethods();
+  verdictEl.className='verdict';
+  verdictEl.innerHTML='<span class="neutral">Evo postupka — pokušaj sam dovršiti:</span>';
+  feedbackEl.classList.add('show');
+});
+$('methodsBtn').addEventListener('click',openMethods);
+document.querySelectorAll('[data-open="history"]').forEach(b=>b.addEventListener('click',openHistory));
+$('goalBtn').addEventListener('click',()=>{
+  const v=prompt('Dnevni cilj (broj zadataka):',stats.goal||30);
+  if(v==null)return;
+  const n=parseInt(v,10);
+  if(n>0&&n<1000){stats.goal=n;saveStats();renderRing();}
+});
+$('resetBtn').addEventListener('click',()=>{
+  if(confirm('Izbrisati sav napredak? Ovo se ne može poništiti.')){
+    stats=blankStats();saveStats();renderStats();closeModals();
+  }
+});
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closeModals));
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModals();}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModals();});
+
+/* ============ Start ============ */
+heroDate();
+buildChips();
+renderStats();
+newProblem();
+</script>
+</body>
+</html>
